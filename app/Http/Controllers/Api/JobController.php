@@ -70,9 +70,9 @@ class JobController extends Controller
     }
 
     // 工作详情
-    public function getDetailById(int $id)
+    public function getDetailById(string $id)
     {
-        $job = $this->jobService->getById($id) ?? [];
+        $job = $this->jobService->getById((int)$id) ?? [];
         $result = [
             'code' => 0,
             'msg' => '获取工作详情成功',
