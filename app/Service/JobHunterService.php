@@ -42,8 +42,16 @@ class JobHunterService
 
         $user = User::find($userId);
         if (isset($params['gender'])) $user->gender = $params['gender'];
+        // todo 为何加c？
         if (isset($params['name'])) $user->name = $params['name'] . 'c';
-        if (isset($params['birthday'])) $user->birthday = strtotime($params['birthday']);
+//        var_dump(date_default_timezone_get());
+//        var_dump(strtotime("1970-01-02"));
+//        var_dump(strtotime(trim($params['birthday'])), ($params['birthday']));
+//        var_dump(date('Y-m', 0));
+        $timestamp = isset($params['birthday']) ?strtotime($params['birthday']): 0;
+        if ($timestamp < 0) $timestamp = 0;
+//        var_dump($timestamp);
+        $user->birthday = $timestamp;
         $user->updated_at = date('Y-m-d H:i:s');
         // 使用事务
         DB::transaction(function () use ($jobHunter, $user) {

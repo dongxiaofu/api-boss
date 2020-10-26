@@ -92,7 +92,6 @@ class JobService
 
     public function getById(int $id)
     {
-
         return new JobResource(Job::find($id));
         $job = Job::find($id);
         if (!is_null($job)) {
