@@ -63,6 +63,8 @@ class AuthController extends Controller
         }
 
         $user = User::create([
+            // 默认姓名是email
+            'name' => $email,
             'email' => $email,
             'password' => Hash::make($password),
         ]);
