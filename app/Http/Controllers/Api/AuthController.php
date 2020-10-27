@@ -87,6 +87,8 @@ class AuthController extends Controller
 //        var_dump($jobHunter);
 
         $token = auth('api')->login($user);
+        // 提供更全面的用户信息
+        $user = User::find($user->id);
 
         return $this->respondWithToken($token, $user);
     }

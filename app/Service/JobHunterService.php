@@ -42,8 +42,8 @@ class JobHunterService
 
         $user = User::find($userId);
         if (isset($params['gender'])) $user->gender = $params['gender'];
-        // todo 为何加c？
-        if (isset($params['name'])) $user->name = $params['name'] . 'c';
+        // todo 为何加c？去掉试试
+        if (isset($params['name'])) $user->name = $params['name'];
 //        var_dump(date_default_timezone_get());
 //        var_dump(strtotime("1970-01-02"));
 //        var_dump(strtotime(trim($params['birthday'])), ($params['birthday']));
