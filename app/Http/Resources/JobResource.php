@@ -35,7 +35,8 @@ class JobResource extends JsonResource
 //        ];
         $company = new CompanyResource(Company::find($this->company_id));
 //        $request->offsetSet('company', $company);
-        $this->resource['job_status'] = JobService::getJobStatusText($this->satus);
+//        $this->resource['job_status'] = JobService::getJobStatusText($this->satus);
+        $this->resource['job_status'] = JobService::getJobStatusText($this->resource['satus']);
         unset($this->resource['status']);
         $this->resource['company'] = $company;
         $employee = new EmployeeResource(Employee::find($this->employee_id));
