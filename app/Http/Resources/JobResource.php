@@ -35,7 +35,7 @@ class JobResource extends JsonResource
 //        ];
         $company = new CompanyResource(Company::find($this->company_id));
 //        $request->offsetSet('company', $company);
-        $this->resource['job_status'] = $this->status;
+        $this->resource['job_status'] = JobService::getJobStatusText($this->satus);
         unset($this->resource['status']);
         $this->resource['company'] = $company;
         $employee = new EmployeeResource(Employee::find($this->employee_id));
@@ -43,6 +43,7 @@ class JobResource extends JsonResource
         unset($this->resource['employee_id']);
         $this->resource['update_time'] = $this->updated_at->toDateString();
         unset($this->resource['updated_at']);
+        // todo $this->resource['degree'] 这是啥语法？$this->degree行吗？
         $this->resource['degree'] = JobService::getDegreeText($this->resource['degree']);
 
         $this->resource['experience'] = JobService::getExperienceText($this->resource['experience']);

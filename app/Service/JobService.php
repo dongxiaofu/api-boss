@@ -45,7 +45,7 @@ class JobService
         $industry && $jobs = $jobs->where('company.industry', intval($industry));
 
         $currentPage = $page;
-        $pageSize = 2;
+        $pageSize = 10;
         $start = ($currentPage - 1) * $pageSize;
         $jobs = $jobs->offset($start)->limit($pageSize)->get();
 
@@ -148,6 +148,12 @@ class JobService
     static function getIndustryText(int $code)
     {
         return self::getJobConfig($code, 'industry');
+    }
+
+    public
+    static function getJobStatusText(int $code)
+    {
+        return self::getJobConfig($code, 'status');
     }
 
 }
