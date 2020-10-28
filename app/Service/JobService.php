@@ -57,7 +57,7 @@ class JobService
             $collection->add($job);
         }
 
-        $paginator = new Paginator($collection, 2, 1);
+        $paginator = new Paginator($collection, $pageSize, 1);
 
         return new JobPageCollection($paginator);
 
