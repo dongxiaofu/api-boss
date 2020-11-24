@@ -97,8 +97,9 @@ Route::group([
 Route::group([
     'prefix' => 'user'
 ], function ($router) {
-    // 用户信息
     Route::get('', 'UserController@getById');
+    // 客服列表
+    Route::get('list', 'UserController@getUsers');
     // 保存用户信息
     Route::post('', 'UserController@save');
     // 保存求职者个人优势
