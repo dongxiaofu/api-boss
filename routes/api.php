@@ -114,3 +114,13 @@ Route::group([
     // 删除工作经验
     Route::delete('/experience', 'ExperienceController@delete');
 });
+
+
+// 会话
+Route::group([
+    'prefix' => 'session'
+], function ($router) {
+    Route::get('', 'UserController@getById');
+    // 客服列表
+    Route::get('list', 'SessionController@getList');
+});
