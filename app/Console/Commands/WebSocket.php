@@ -66,6 +66,7 @@ class WebSocket extends Command
 
         //监听WebSocket连接打开事件
         $ws->on('open', function ($ws, $request) {
+
             $getData = $request->get;
             $type = intval($getData['type'] ?? 0);
             $userId = intval($getData['userId'] ?? 0);
@@ -81,6 +82,12 @@ class WebSocket extends Command
 
             if ($type == 1) {
                 $user = User::find($userId);
+                if (!$user) {
+                    $this->info('用户密码错误');
+                    $ws->close(0);
+                    // 能用return，不会导致命令行退出
+                    return;
+                }
 
                 // 单用户登录
                 $oldToken = $user->token ?? '';
