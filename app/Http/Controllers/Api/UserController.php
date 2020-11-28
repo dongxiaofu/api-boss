@@ -94,11 +94,11 @@ class UserController extends Controller
     // 修改客服资料
     public function saveUser(Request $request)
     {
-        $userId = trim($request->get('user_id', 0));
-        $avatar = trim($request->get('new_avatar', ''));
-        $pwd = trim($request->get('new_pwd', ''));
-        $oldPwd = trim($request->get('old_pwd', ''));
-        if (empty($userId) || empty($avatar) || empty($pwd) || empty($oldPwd)) {
+        $userId = intval($request->get('userId', 0));
+        $avatar = $request->get('newAvatar', '');
+        $pwd = $request->get('newPwd', '');
+        $oldPwd = $request->get('oldPwd', '');
+        if (empty($userId)) {
             $result = [
                 'code' => -1,
                 'msg' => '参数不正确',
@@ -110,6 +110,11 @@ class UserController extends Controller
         try {
             $avatarUrl = $this->saveAvatar($avatar);
             $this->updateUser($userId, $avatarUrl, $pwd, $oldPwd);
+            $result = [
+                'code' => 0,
+                'msg' => '密码修改成功',
+                'data' => []
+            ];
         } catch (\Exception $exception) {
             $result = [
                 'code' => -1,
@@ -124,6 +129,10 @@ class UserController extends Controller
 
     private function saveAvatar($avatar)
     {
+
+        if(empty($avatar)){
+            return '';
+        }
         $avatarUrl = Utils::base64_image_content($avatar, Utils::IMAGE_PATH);
 
         return $avatarUrl;
@@ -137,12 +146,15 @@ class UserController extends Controller
             throw new \Exception('用户不存在', -1);
         }
 
-        if ($user->password != Hash::make($oldPwd)) {
+        if ($password && !Hash::check($oldPwd, $user->password)) {
             throw new \Exception('旧密码填写错误', -1);
         }
+//        if ($user->password != Hash::make($oldPwd)) {
+//            throw new \Exception('旧密码填写错误', -1);
+//        }
 
-        $user->avatar = $avatarUrl;
-        $user->password = Hash::make($password);
+        $avatarUrl && $user->avatar = $avatarUrl;
+        $password && $user->password = Hash::make($password);
         $user->save();
     }
 

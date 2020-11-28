@@ -6,7 +6,7 @@ namespace App\Service;
 
 class Utils
 {
-    public static const IMAGE_PATH = '/Users/cg/data/www/cg/html/ws/pic';
+    public const IMAGE_PATH = '/Users/cg/data/www/cg/html/ws/pic';
 
     public static function base64_image_content($base64_image_content, $path)
     {
