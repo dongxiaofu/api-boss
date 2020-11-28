@@ -183,7 +183,7 @@ class SessionController extends Controller
     public function blockSwitch(Request $request)
     {
         $sessionId = $request->get('session_id', 0);
-        // 是否屏蔽：0.未屏蔽；1.屏蔽
+        // 是否屏蔽：0.屏蔽；1.未屏蔽
         $actionCode = $request->get('action_code', 0);
 
         $result = [

@@ -91,6 +91,7 @@ class WebSocket extends Command
                     $customer = new Customer();
                     $customer->name = '游客' . strval(mt_rand(1, 200));
                     $customer->address = $address;
+                    $customer->is_block = 1;
                     $customer->fn_id = $requestId;
                     $customer->save();
                     $customerId = $customer->id;
@@ -116,6 +117,7 @@ class WebSocket extends Command
                     $session->date_text = date('Ymd');
                     $session->address = $address;
                     $session->status = 1;
+                    $session->is_block = 1;
                     $session->save();
                     $sessionId = $session->id;
                     $this->info('创建游客账号 start');
