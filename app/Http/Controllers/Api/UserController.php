@@ -6,9 +6,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Model\User;
 use App\Service\JobHunterService;
+use App\Service\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Mockery\Exception;
 
 
 class UserController extends Controller
@@ -89,4 +90,60 @@ class UserController extends Controller
         ];
         return $this->response($result);
     }
+
+    // 修改客服资料
+    public function saveUser(Request $request)
+    {
+        $userId = trim($request->get('user_id', 0));
+        $avatar = trim($request->get('new_avatar', ''));
+        $pwd = trim($request->get('new_pwd', ''));
+        $oldPwd = trim($request->get('old_pwd', ''));
+        if (empty($userId) || empty($avatar) || empty($pwd) || empty($oldPwd)) {
+            $result = [
+                'code' => -1,
+                'msg' => '参数不正确',
+                'data' => []
+            ];
+            return $this->response($result);
+        }
+
+        try {
+            $avatarUrl = $this->saveAvatar($avatar);
+            $this->updateUser($userId, $avatarUrl, $pwd, $oldPwd);
+        } catch (\Exception $exception) {
+            $result = [
+                'code' => -1,
+                'msg' => $exception->getMessage(),
+                'data' => []
+            ];
+        }
+
+
+        return $this->response($result);
+    }
+
+    private function saveAvatar($avatar)
+    {
+        $avatarUrl = Utils::base64_image_content($avatar, Utils::IMAGE_PATH);
+
+        return $avatarUrl;
+    }
+
+    private function updateUser($userId, $avatarUrl, $password, $oldPwd)
+    {
+        $user = User::find($userId);
+
+        if (empty($user)) {
+            throw new \Exception('用户不存在', -1);
+        }
+
+        if ($user->password != Hash::make($oldPwd)) {
+            throw new \Exception('旧密码填写错误', -1);
+        }
+
+        $user->avatar = $avatarUrl;
+        $user->password = Hash::make($password);
+        $user->save();
+    }
+
 }

@@ -7,6 +7,7 @@ use App\Model\Customer;
 use App\Model\Session;
 use App\Model\User;
 use App\Model\Message;
+use App\Service\Utils;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -268,10 +269,9 @@ class WebSocket extends Command
             if ($msgType == 1 || $msgType == 2) {
                 $msgData = $msgData . '|' . $msgType;
             } elseif ($msgType == 3) {
-                $filename = '/Users/cg/data/www/boss-api-fix/app/Console/Commands/' . time() . '.png';
-                file_put_contents($filename, $msgData);
-                $filePath = '/Users/cg/data/www/cg/html/ws/pic';
-                $msgData = $this->base64_image_content($msgData, $filePath);
+                $filePath = Utils::IMAGE_PATH;
+//                $msgData = $this->base64_image_content($msgData, $filePath);
+                $msgData = Utils::base64_image_content($msgData, $filePath);
                 $msgData = 'pic/' . $msgData . '|' . $msgType;
             }
 
