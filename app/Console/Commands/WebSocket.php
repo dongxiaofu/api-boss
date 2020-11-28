@@ -215,6 +215,7 @@ class WebSocket extends Command
             if ($type == 1) {
                 $this->info('toWhoId:' . $toWhoId);
                 $customer = Customer::find($toWhoId);
+                $isBlock = $customer->is_block;
                 var_dump($customer);
                 $receiverId = $customer->fn_id;
                 var_dump($receiverId);
@@ -235,29 +236,22 @@ class WebSocket extends Command
                 $msgData = 'pic/' . $msgData . '|' . $msgType;
             }
 
-            $ws->push($receiverId, $msgData);
-
-
-            // 保存聊天记录
-            $messageModel = new Message();
+            // 被屏蔽的会话的消息，不转发。用session作为判断依据，简洁.
+            // 游客发来的消息，没有包含游客ID
             $session = Session::find($sessionId);
-            $customerId = $session->customer_id;
-
-            $messageModel->session_id = $sessionId;
-            $messageModel->user_id = $userId;
-            $messageModel->customer_id = $customerId;
-            $messageModel->message = $msgData;
-            $messageModel->date_text = date('Ymd');
-            $messageModel->status = 1;
-            $messageModel->save();
-
-
-            foreach ($request2 as $v) {
-                if ($v != $receiverId) {
-//                    continue;
-                }
-//                $ws->push($v, "server: {$frame->data}  $v");
-//                $ws->push($frame->fd, "server: {$frame->data}");
+            $isBlock = $session->is_block;
+            if($isBlock == 1){
+                $ws->push($receiverId, $msgData);
+                // 保存聊天记录
+                $messageModel = new Message();
+                $customerId = $session->customer_id;
+                $messageModel->session_id = $sessionId;
+                $messageModel->user_id = $userId;
+                $messageModel->customer_id = $customerId;
+                $messageModel->message = $msgData;
+                $messageModel->date_text = date('Ymd');
+                $messageModel->status = 1;
+                $messageModel->save();
             }
         });
 
