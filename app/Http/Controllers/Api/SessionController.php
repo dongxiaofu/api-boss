@@ -24,7 +24,10 @@ class SessionController extends Controller
     // 用户信息
     public function getList(Request $request)
     {
-        $user = Session::limit(5)->orderBy('id', 'desc')->get();
+        $user = Session::limit(50)
+            ->orderBy('id', 'desc')
+            ->where('status', 1)
+            ->get();
         $result = [
             'code' => 0,
             'msg' => '获取会话列表成功',

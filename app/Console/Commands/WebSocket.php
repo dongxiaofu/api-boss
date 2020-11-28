@@ -115,6 +115,7 @@ class WebSocket extends Command
                     $session->customer_id = $customerId;
                     $session->date_text = date('Ymd');
                     $session->address = $address;
+                    $session->status = 1;
                     $session->save();
                     $sessionId = $session->id;
                     $this->info('创建游客账号 start');
@@ -245,6 +246,7 @@ class WebSocket extends Command
             $messageModel->customer_id = $customerId;
             $messageModel->message = $msgData;
             $messageModel->date_text = date('Ymd');
+            $messageModel->status = 1;
             $messageModel->save();
 
 
