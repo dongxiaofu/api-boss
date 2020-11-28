@@ -118,6 +118,7 @@ class WebSocket extends Command
                 $sessionId = 0;
                 $customerId = 0;
             } else {
+                $sessionTitle = '游客' . strval(mt_rand(1, 200));
                 $address = $this->getAddressByIP($ip);
                 // 同一个游客，复用账号和会话
                 if ($customerId) {
@@ -128,7 +129,7 @@ class WebSocket extends Command
                 } else {
                     // 创建游客账号
                     $customer = new Customer();
-                    $customer->name = '游客' . strval(mt_rand(1, 200));
+                    $customer->name = $sessionTitle;
                     $customer->address = $address;
                     $customer->is_block = 1;
                     $customer->fn_id = $requestId;
@@ -151,6 +152,7 @@ class WebSocket extends Command
                     // 创建会话
                     $session = new Session();
                     $session->user_id = $userId;
+                    $session->title = $sessionTitle;
                     $session->customer_id = $customerId;
                     $session->date_text = date('Ymd');
                     $session->address = $address;
@@ -250,12 +252,13 @@ class WebSocket extends Command
             $this->info('================= start ===========');
             // type:1，客服发送；2，游客发送
             if ($type == 1) {
-                $this->info('toWhoId:' . $toWhoId);
+
                 $customer = Customer::find($toWhoId);
                 $isBlock = $customer->is_block ?? 0;
                 // var_dump($customer);
                 $receiverId = $customer->fn_id ?? 0;
-                // var_dump($receiverId);
+                $this->info('toWhoId:' . $toWhoId);
+                $this->info('receiverId:' . $receiverId);
             } else {
                 $this->info('================= $toWhoId s===========');
                 $this->info($toWhoId);
@@ -284,6 +287,8 @@ class WebSocket extends Command
                 // 保存聊天记录
                 $messageModel = new Message();
                 $customerId = $session->customer_id;
+                $sender = $type == 1 ? $userId : $customerId;
+                $messageModel->sender = $sender;
                 $messageModel->session_id = $sessionId;
                 $messageModel->user_id = $userId;
                 $messageModel->customer_id = $customerId;
