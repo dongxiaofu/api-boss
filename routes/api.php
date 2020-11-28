@@ -126,6 +126,8 @@ Route::group([
     Route::get('ip', 'SessionController@getIp');
     // 清理
     Route::put('clear', 'SessionController@clear');
+    // 屏蔽
+    Route::put('block', 'SessionController@blockSwitch');
 });
 
 Route::group([

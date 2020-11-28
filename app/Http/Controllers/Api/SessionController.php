@@ -178,4 +178,44 @@ class SessionController extends Controller
     {
         return date('Ymd', strtotime('-' . $timeType . ' days'));;
     }
+
+    // 屏蔽
+    public function blockSwitch(Request $request)
+    {
+        $sessionId = $request->get('session_id', 0);
+        // 是否屏蔽：0.未屏蔽；1.屏蔽
+        $actionCode = $request->get('action_code', 0);
+
+        $result = [
+            'code' => 0,
+            'msg' => '屏蔽成功',
+            'data' => []
+        ];
+
+        try {
+            $this->setBlock($sessionId, $actionCode);
+        } catch (\Exception $exception) {
+            $result = [
+                'code' => 0,
+                'msg' => '屏蔽失败',
+                'data' => []
+            ];
+        }
+
+        return $result;
+
+    }
+
+    private function setBlock($sessionId, $actionCode)
+    {
+        // 屏蔽会话
+        $session = Session::find($sessionId);
+        $session->is_block = (int)$actionCode;
+        $session->save();
+        // 屏蔽游客
+        $customerId = $session->customer_id;
+        $sql = 'update customer set is_block = :is_block where id = :id';
+        $binds = [':is_block' => $actionCode, ':id' => $customerId];
+        $count = DB::update($sql, $binds);
+    }
 }
