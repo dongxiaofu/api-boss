@@ -30,13 +30,24 @@ class MessageController extends Controller
             ->where('date_text', '>=', $sevenDaysAgo)
             ->get();
         $messagesGroupByDate = [];
-        foreach ($messages as $message){
+        foreach ($messages as $message) {
             $date = $message['date_text'];
+//            $message->created_at = date('Y-m-d H:i:s', $message->created_at);
+//            $year
+//            * @property      int                 $yearIso
+//            * @property      int                 $month
+//            * @property      int                 $day
+//            * @property      int                 $hour
+//            * @property      int                 $minute
+//            * @property      int                 $second
+            $carbon = $message->created_at;
+            $message->post_time = sprintf('%d-%d-%d %d:%d:%d',
+                $carbon->year, $carbon->month, $carbon->day,$carbon->hour, $carbon->minute, $carbon->second);;
             $messagesGroupByDate[$date][] = $message;
         }
         // 花时间多
         $messages = [];
-        foreach ($messagesGroupByDate as $key => $v){
+        foreach ($messagesGroupByDate as $key => $v) {
             $item['date'] = $key;
             $item['messages'] = $v;
             $messages[] = $item;
@@ -69,14 +80,14 @@ class MessageController extends Controller
     public function save(Request $request)
     {
         $params = $request->all();
-        try{
+        try {
             $this->jobHunterService->save($params);
             $result = [
                 'code' => 0,
                 'msg' => '更新求职者信息成功2',
                 'data' => []
             ];
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
             $result = [
                 'code' => -1,
