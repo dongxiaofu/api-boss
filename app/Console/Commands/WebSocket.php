@@ -31,7 +31,7 @@ class WebSocket extends Command
      * 方便查找日志
      * @var string
      */
-    protected $logTag = 'convert-too-pinyin';
+    protected $logTag = 'web-socket';
 
     protected $requestCollection;
 
@@ -61,45 +61,75 @@ class WebSocket extends Command
     {
         //创建WebSocket Server对象，监听0.0.0.0:9502端口
         $ws = new \Swoole\WebSocket\Server('0.0.0.0', 9502);
-//        $type = 2;
-//        $userId = 1;
 
 
         //监听WebSocket连接打开事件
         $ws->on('open', function ($ws, $request) {
-//            var_dump($request);
             $getData = $request->get;
-            $type = intval($getData['type']);
-            $userId = intval($getData['userId']);
+            $type = intval($getData['type'] ?? 0);
+            $userId = intval($getData['userId'] ?? 0);
+            $customerId = intval($getData['customerId'] ?? 0);
+            $sessionId = intval($getData['sessionId'] ?? 0);
+            $ip = $getData['ip'] ?? 0;
             $requestId = $request->fd;
             if ($type == 1) {
                 $user = User::find($userId);
                 $user->fn_id = $requestId;
                 $user->save();
                 $sessionId = 0;
+                $customerId = 0;
             } else {
-                // 创建游客账号
-                $customer = new Customer();
-                $customer->name = '游客' . strval(mt_rand(1, 200));
-                $customer->fn_id = $requestId;
-                $customer->save();
-                $customerId = $customer->id;
-                // 创建会话
-                $session = new Session();
-                $session->user_id = $userId;
-                $session->customer_id = $customerId;
-                $session->save();
-                $sessionId = $session->id;
-                $this->info('创建游客账号 start');
-                var_dump($sessionId);
-                $this->info('创建游客账号 end');
-//                $userId = $customerId;
+                $address = $this->getAddressByIP($ip);
+                // 同一个游客，复用账号和会话
+                if ($customerId) {
+                    $customer = Customer::find($customerId);
+                    $customer->address = $address;
+                    $customer->fn_id = $requestId;
+                    $customer->save();
+                } else {
+                    // 创建游客账号
+                    $customer = new Customer();
+                    $customer->name = '游客' . strval(mt_rand(1, 200));
+                    $customer->address = $address;
+                    $customer->fn_id = $requestId;
+                    $customer->save();
+                    $customerId = $customer->id;
+                }
+
+                if ($sessionId) {
+                    // 更新会话
+//                    $session = Session::find($sessionId)->where('user_id', $userId)->where('customer_id', $customerId);
+                    $session = Session::find($sessionId);
+                    $this->info('session start====================');
+                    var_dump($session);
+                    if ($session) {
+                        $session->date_text = date('Ymd');
+                        $session->address = $address;
+                        $session->save();
+                    }
+                    $this->info('session end====================');
+                } else {
+                    // 创建会话
+                    $session = new Session();
+                    $session->user_id = $userId;
+                    $session->customer_id = $customerId;
+                    $session->date_text = date('Ymd');
+                    $session->address = $address;
+                    $session->save();
+                    $sessionId = $session->id;
+                    $this->info('创建游客账号 start');
+                    $this->info('创建游客账号 end');
+                }
+
+                // 向客服推送一条信息，开启一个新的会话
+                $user = User::find($userId);
+                $receiverId = $user->fn_id;
+                $msg = '2|' . $requestId . '|' . $userId . '|' . $sessionId . '|' . $customerId;
+                $ws->push($receiverId, $msg);
             }
 
             $requestJson = Cache::get('request2');
-//            var_dump($requestJson);
             if (is_null($requestJson)) {
-                var_dump($requestId);
                 $request2[] = $requestId;
             } else {
                 $request2 = \json_decode($requestJson, true);
@@ -107,7 +137,8 @@ class WebSocket extends Command
             }
             $requestJson = \json_encode($request2);
             Cache::put('request2', $requestJson);
-            $msg = '-1|' . $requestId . '|' . $userId . '|' . $sessionId;
+            // todo 在最后加了游客ID
+            $msg = '-1|' . $requestId . '|' . $userId . '|' . $sessionId . '|' . $customerId;
             $this->info('msg start2===========');
             $this->info($msg);
             $this->info('msg end2===========');
@@ -116,6 +147,14 @@ class WebSocket extends Command
 
         //监听WebSocket消息事件
         $ws->on('message', function ($ws, $frame) {
+            file_put_contents('/Users/cg/data/www/boss-api-fix/app/Console/Commands/log', var_export($frame, true));
+//            var_dump($frame);
+
+//            $user = User::find(1);
+//            $receiverId = $user->fn_id;
+//            $ws->push($receiverId, $frame->data);
+//
+//            return;
             $requestJson = Cache::get('request2');
             if (is_null($requestJson)) {
                 return;
@@ -154,7 +193,9 @@ class WebSocket extends Command
 //            text += receiverId + '|' + username + '|' + content;
 
             $arr = explode('|', $data);
-            var_dump($arr);
+//            $this->info('arr start=============');
+//            var_dump($arr);
+//            $this->info('arr end=============');
             $type = $arr[0];
             array_shift($arr);
             $userId = intval($arr[0]);
@@ -169,18 +210,29 @@ class WebSocket extends Command
             $this->info('================= start ===========');
             // type:1，客服发送；2，游客发送
             if ($type == 1) {
-                var_dump($toWhoId);
+                $this->info('toWhoId:' . $toWhoId);
                 $customer = Customer::find($toWhoId);
+                var_dump($customer);
                 $receiverId = $customer->fn_id;
+                var_dump($receiverId);
             } else {
                 $user = User::find($toWhoId);
-                var_dump($userId, $user);
                 $receiverId = $user->fn_id;
             }
-            var_dump($receiverId, $data, $message);
             $this->info('================= end ===========');
-            $ws->push($receiverId, "server: $frame->data  ");
-            $ws->push($receiverId, "server: $message  ");
+            $msgData = $arr[count($arr) - 2];
+            $msgType = $arr[count($arr) - 1];
+            if ($msgType == 1 || $msgType == 2) {
+                $msgData = $msgData . '|' . $msgType;
+            } elseif ($msgType == 3) {
+                $filename = '/Users/cg/data/www/boss-api-fix/app/Console/Commands/' . time() . '.png';
+                file_put_contents($filename, $msgData);
+                $filePath = '/Users/cg/data/www/cg/html/ws/pic';
+                $msgData = $this->base64_image_content($msgData, $filePath);
+                $msgData = 'pic/' . $msgData . '|' . $msgType;
+            }
+
+            $ws->push($receiverId, $msgData);
 
 
             // 保存聊天记录
@@ -191,7 +243,8 @@ class WebSocket extends Command
             $messageModel->session_id = $sessionId;
             $messageModel->user_id = $userId;
             $messageModel->customer_id = $customerId;
-            $messageModel->message = $message;
+            $messageModel->message = $msgData;
+            $messageModel->date_text = date('Ymd');
             $messageModel->save();
 
 
@@ -210,6 +263,41 @@ class WebSocket extends Command
         });
 
         $ws->start();
+    }
+
+    private function base64_image_content($base64_image_content, $path)
+    {
+        //匹配出图片的格式
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result)) {
+            $type = $result[2];
+            $childPath = date('Ymd', time()) . "/";
+            $new_file = $path . "/" . $childPath;
+            if (!file_exists($new_file)) {
+                //检查是否有该文件夹，如果没有就创建，并给予最高权限
+                mkdir($new_file, 0700);
+            }
+            $filename = time() . ".{$type}";
+            $new_file = $new_file . $filename;
+            if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))) {
+                return $childPath . '/' . $filename;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private function getAddressByIP($ip)
+    {
+        $unknownAddress = '未知地址';
+        $qqwry_filepath = $path = base_path('vendor/itbdw/ip-database/src/qqwry.dat');
+        $addressInfo = json_encode(IpLocation::getLocation($ip, $qqwry_filepath), JSON_UNESCAPED_UNICODE);
+        if (!$addressInfo) {
+            return $unknownAddress;
+        } else {
+            return $addressInfo['area'] ?? $unknownAddress;
+        }
     }
 }
 

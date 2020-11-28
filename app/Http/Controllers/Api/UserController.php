@@ -53,14 +53,14 @@ class UserController extends Controller
     public function save(Request $request)
     {
         $params = $request->all();
-        try{
+        try {
             $this->jobHunterService->save($params);
             $result = [
                 'code' => 0,
                 'msg' => '更新求职者信息成功2',
                 'data' => []
             ];
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
             $result = [
                 'code' => -1,

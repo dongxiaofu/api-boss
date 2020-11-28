@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e4139f9868250e90e3cad498da3f6298",
+    "content-hash": "054d940d301804993f8c8ae5f253b6dd",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -697,6 +697,57 @@
                 "url"
             ],
             "time": "2019-07-01T23:21:34+00:00"
+        },
+        {
+            "name": "itbdw/ip-database",
+            "version": "v2.0.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/itbdw/ip-database.git",
+                "reference": "f16b66269e9f0828599074228ded2385d0bda97e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/itbdw/ip-database/zipball/f16b66269e9f0828599074228ded2385d0bda97e",
+                "reference": "f16b66269e9f0828599074228ded2385d0bda97e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-iconv": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": "~5.4|~7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "itbdw\\Ip\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "itbdw",
+                    "email": "itbudaoweng@gmail.com",
+                    "homepage": "http://github.com/itbdw",
+                    "role": "Developer"
+                }
+            ],
+            "description": "免费IP地址数据库(纯真IP地址数据库，输出格式为国家、省、市、县、运营商)❤️ 🇨🇳，中文数据库",
+            "keywords": [
+                "IP",
+                "IP地址库",
+                "IP数据库",
+                "database",
+                "location",
+                "qqwry",
+                "数据库",
+                "纯真IP地址库"
+            ],
+            "time": "2020-11-06T17:54:36+00:00"
         },
         {
             "name": "laravel/framework",

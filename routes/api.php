@@ -123,4 +123,12 @@ Route::group([
     Route::get('', 'UserController@getById');
     // 客服列表
     Route::get('list', 'SessionController@getList');
+    Route::get('ip', 'SessionController@getIp');
+});
+
+Route::group([
+    'prefix' => 'message'
+], function ($router) {
+    // 消息列表
+    Route::get('list', 'MessageController@getList');
 });

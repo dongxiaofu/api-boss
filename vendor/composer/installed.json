@@ -873,7 +873,8 @@
             "data",
             "faker",
             "fixtures"
-        ]
+        ],
+        "abandoned": true
     },
     {
         "name": "guzzlehttp/guzzle",
@@ -1117,6 +1118,59 @@
         "description": "This is the PHP port of Hamcrest Matchers",
         "keywords": [
             "test"
+        ]
+    },
+    {
+        "name": "itbdw/ip-database",
+        "version": "v2.0.9",
+        "version_normalized": "2.0.9.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/itbdw/ip-database.git",
+            "reference": "f16b66269e9f0828599074228ded2385d0bda97e"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/itbdw/ip-database/zipball/f16b66269e9f0828599074228ded2385d0bda97e",
+            "reference": "f16b66269e9f0828599074228ded2385d0bda97e",
+            "shasum": ""
+        },
+        "require": {
+            "ext-iconv": "*",
+            "ext-json": "*",
+            "ext-mbstring": "*",
+            "php": "~5.4|~7.0"
+        },
+        "time": "2020-11-06T17:54:36+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "itbdw\\Ip\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "itbdw",
+                "email": "itbudaoweng@gmail.com",
+                "homepage": "http://github.com/itbdw",
+                "role": "Developer"
+            }
+        ],
+        "description": "免费IP地址数据库(纯真IP地址数据库，输出格式为国家、省、市、县、运营商)❤️ 🇨🇳，中文数据库",
+        "keywords": [
+            "IP",
+            "IP地址库",
+            "IP数据库",
+            "database",
+            "location",
+            "qqwry",
+            "数据库",
+            "纯真IP地址库"
         ]
     },
     {

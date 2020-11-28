@@ -23,7 +23,7 @@ class SessionController extends Controller
     // 用户信息
     public function getList(Request $request)
     {
-        $user = Session::all();
+        $user = Session::limit(5)->orderBy('id', 'desc')->get();
         $result = [
             'code' => 0,
             'msg' => '获取会话列表成功',
@@ -85,6 +85,20 @@ class SessionController extends Controller
             'code' => 0,
             'msg' => '更新求职者信息成功',
             'data' => []
+        ];
+        return $this->response($result);
+    }
+
+
+    // 获取IP
+    public function getIP(Request $request)
+    {
+        $result = [
+            'code' => 0,
+            'msg' => '更新求职者信息成功',
+            'data' => [
+                'ip' => $_SERVER['REMOTE_ADDR']
+            ]
         ];
         return $this->response($result);
     }
