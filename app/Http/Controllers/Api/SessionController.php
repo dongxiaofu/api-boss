@@ -118,8 +118,8 @@ class SessionController extends Controller
 //        <option value="5">5天</option>
 //        <option :value="7">7天</option>
 //        </select>
-        $actionTypeSession = 1;
-        $actionTypeMessage = 2;
+        $actionTypeSession = 2;
+        $actionTypeMessage = 1;
         $timeType5 = 5;
         $timeType7 = 7;
         $actionType = $request->get('action_type', 0);
@@ -155,7 +155,9 @@ class SessionController extends Controller
         $sql .= 'where status = 1 ';
         $sql .= 'and date_text <= :date_text';
         $binds = [':status' => 0, 'date_text' => $date];
+
         $count = DB::update($sql, $binds);
+//        var_dump($sql, $binds, $count);exit;
         return $count;
     }
 
