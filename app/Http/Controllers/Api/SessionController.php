@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Service\JobHunterService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Model\Session;
 
@@ -52,14 +53,14 @@ class SessionController extends Controller
     public function save(Request $request)
     {
         $params = $request->all();
-        try{
+        try {
             $this->jobHunterService->save($params);
             $result = [
                 'code' => 0,
                 'msg' => '更新求职者信息成功2',
                 'data' => []
             ];
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
             $result = [
                 'code' => -1,
@@ -101,5 +102,75 @@ class SessionController extends Controller
             ]
         ];
         return $this->response($result);
+    }
+
+    // 清理会话
+    public function clear(Request $request)
+    {
+//        <select v-model="actionId">
+//        <option :value="1">清理对话内容</option>
+//        <option :value="2">清理对话列表</option>
+//        </select>
+//        <select v-model="actionTime">
+//        <option value="5">5天</option>
+//        <option :value="7">7天</option>
+//        </select>
+        $actionTypeSession = 1;
+        $actionTypeMessage = 2;
+        $timeType5 = 5;
+        $timeType7 = 7;
+        $actionType = $request->get('action_type', 0);
+        $timeType = $request->get('time_type', 0);
+        $sessionId = $request->get('session_id', 0);
+        if ($actionType == 0 || $timeType == 0) {
+            $result = [
+                'code' => 0,
+                'msg' => '参数不正确',
+                'data' => []
+            ];
+        } else {
+            if ($actionType == $actionTypeSession) {
+                $this->clearSession($timeType);
+            } else {
+                $this->clearMessage($sessionId, $timeType);
+            }
+            $result = [
+                'code' => 0,
+                'msg' => '清理成功',
+                'data' => []
+            ];
+        }
+
+        return $this->response($result);
+    }
+
+    private function clearSession($timeType)
+    {
+        $date = $this->getDate($timeType);
+        // status:是否显示：0.隐藏；1.显示
+        $sql = 'update `session` set status = :status ';
+        $sql .= 'where status = 1 ';
+        $sql .= 'and date_text <= :date_text';
+        $binds = [':status' => 0, 'date_text' => $date];
+        $count = DB::update($sql, $binds);
+        return $count;
+    }
+
+    // todo 游客那边也看不到被清理过的对话。
+    private function clearMessage($sessionId, $timeType)
+    {
+        $date = $this->getDate($timeType);
+        $sql = 'update message set status = :status ';
+        $sql .= 'where status = 1 ';
+        $sql .= 'and session_id = :session_id ';
+        $sql .= 'and date_text <= :date_text';
+        $binds = [':status' => 0, 'date_text' => $date, ':session_id' => $sessionId];
+        $count = DB::update($sql, $binds);
+        return $count;
+    }
+
+    private function getDate($timeType)
+    {
+        return date('Ymd', strtotime('-' . $timeType . ' days'));;
     }
 }

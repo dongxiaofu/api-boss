@@ -124,6 +124,8 @@ Route::group([
     // 客服列表
     Route::get('list', 'SessionController@getList');
     Route::get('ip', 'SessionController@getIp');
+    // 清理
+    Route::put('clear', 'SessionController@clear');
 });
 
 Route::group([
