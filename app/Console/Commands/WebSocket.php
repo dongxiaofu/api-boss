@@ -10,6 +10,7 @@ use App\Model\Message;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use itbdw\Ip\IpLocation;
 
 class WebSocket extends Command
 {
@@ -72,10 +73,40 @@ class WebSocket extends Command
             $sessionId = intval($getData['sessionId'] ?? 0);
             $ip = $getData['ip'] ?? 0;
             $requestId = $request->fd;
+            $token = $getData['token'] ?? '';
+            if ($token) {
+                $this->info('用户 ' . $userId . ' 登录,fd是 ' . $requestId);
+            }
+            $token = trim($token);
+
             if ($type == 1) {
                 $user = User::find($userId);
+
+                // 单用户登录
+                $oldToken = $user->token ?? '';
+                $this->info('old:' . $oldToken);
+                $this->info('new:' . $token);
+                $fd = $user->fn_id;
+                // 这个错误的逻辑，消耗了非常非常多时间。
+//                if ($token && $oldToken && md5($oldToken) != md5($token)) {
+                // 登录，而且，新fd与数据库中的fd不一致，则执行挤下线操作。
+                // 新旧fd一定不一致。
+                // 使用token比较，是不行的。在登录时，旧token已经被替换了。
+                // 在心跳机制中执行挤下线操作，更合适。
+                if ($token && $requestId != $fd) {
+                    // 通知$userId的另一个客户端下线
+                    $msg = '88|' . $fd . '|' . $userId . '|' . $sessionId . '|' . $customerId;
+                    $this->info('退出登录 start2===========' . time());
+                    $this->info($msg);
+                    $this->info('退出登录 end2===========');
+                    $ws->push($fd, $msg);
+                }
+
+
                 $user->fn_id = $requestId;
+                $token && $user->token = $token;
                 $user->save();
+
                 $sessionId = 0;
                 $customerId = 0;
             } else {
@@ -102,7 +133,6 @@ class WebSocket extends Command
 //                    $session = Session::find($sessionId)->where('user_id', $userId)->where('customer_id', $customerId);
                     $session = Session::find($sessionId);
                     $this->info('session start====================');
-                    var_dump($session);
                     if ($session) {
                         $session->date_text = date('Ymd');
                         $session->address = $address;
@@ -150,8 +180,7 @@ class WebSocket extends Command
 
         //监听WebSocket消息事件
         $ws->on('message', function ($ws, $frame) {
-            file_put_contents('/Users/cg/data/www/boss-api-fix/app/Console/Commands/log', var_export($frame, true));
-//            var_dump($frame);
+//            // var_dump($frame);
 
 //            $user = User::find(1);
 //            $receiverId = $user->fn_id;
@@ -162,7 +191,7 @@ class WebSocket extends Command
             if (is_null($requestJson)) {
                 return;
             }
-//            var_dump($requestJson);
+//            // var_dump($requestJson);
             $request2 = \json_decode($requestJson, true);
             $data = $frame->data;
 
@@ -197,7 +226,7 @@ class WebSocket extends Command
 
             $arr = explode('|', $data);
 //            $this->info('arr start=============');
-//            var_dump($arr);
+//            // var_dump($arr);
 //            $this->info('arr end=============');
             $type = $arr[0];
             array_shift($arr);
@@ -215,11 +244,14 @@ class WebSocket extends Command
             if ($type == 1) {
                 $this->info('toWhoId:' . $toWhoId);
                 $customer = Customer::find($toWhoId);
-                $isBlock = $customer->is_block;
-                var_dump($customer);
-                $receiverId = $customer->fn_id;
-                var_dump($receiverId);
+                $isBlock = $customer->is_block ?? 0;
+                // var_dump($customer);
+                $receiverId = $customer->fn_id ?? 0;
+                // var_dump($receiverId);
             } else {
+                $this->info('================= $toWhoId s===========');
+                $this->info($toWhoId);
+                $this->info('================= $toWhoId e===========');
                 $user = User::find($toWhoId);
                 $receiverId = $user->fn_id;
             }
@@ -239,8 +271,8 @@ class WebSocket extends Command
             // 被屏蔽的会话的消息，不转发。用session作为判断依据，简洁.
             // 游客发来的消息，没有包含游客ID
             $session = Session::find($sessionId);
-            $isBlock = $session->is_block;
-            if($isBlock == 1){
+            $isBlock = $session->is_block ?? 0;
+            if ($isBlock == 1 && $receiverId) {
                 $ws->push($receiverId, $msgData);
                 // 保存聊天记录
                 $messageModel = new Message();
