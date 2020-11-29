@@ -113,6 +113,7 @@ class WebSocket extends Command
 
 
                 $user->fn_id = $requestId;
+                $user->is_online = 1;
                 $token && $user->token = $token;
                 $user->save();
 
@@ -146,6 +147,7 @@ class WebSocket extends Command
                     if ($session) {
                         $session->date_text = date('Ymd');
                         $session->address = $address;
+                        $session->is_online = 1;
                         $session->save();
                     }
                     $this->info('session end====================');
@@ -158,6 +160,7 @@ class WebSocket extends Command
                     $session->date_text = date('Ymd');
                     $session->address = $address;
                     $session->status = 1;
+                    $session->is_online = 1;
                     $session->is_block = 1;
                     $session->save();
                     $sessionId = $session->id;
