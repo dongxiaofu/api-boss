@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Model\User;
 use App\Service\JobHunterService;
+use App\Service\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Mockery\Exception;
 
 
 class UserController extends Controller
@@ -17,6 +19,33 @@ class UserController extends Controller
     public function __construct(JobHunterService $jobHunterService)
     {
         $this->jobHunterService = $jobHunterService;
+    }
+
+
+    // 用户信息
+    public function getUsers(Request $request)
+    {
+        $user = User::all();
+        $result = [
+            'code' => 0,
+            'msg' => '获取客服列表成功',
+            'data' => $user
+        ];
+        return $this->response($result);
+    }
+
+    // 客服信息
+    public function getServiceById(Request $request)
+    {
+        $userId = $request->get('user_id', 0);
+        $userId = (int)$userId;
+        $user = User::find($userId);
+        $result = [
+            'code' => 0,
+            'msg' => '获取客服信息成功',
+            'data' => $user,
+        ];
+        return $this->response($result);
     }
 
     // 用户信息
@@ -39,14 +68,14 @@ class UserController extends Controller
     public function save(Request $request)
     {
         $params = $request->all();
-        try{
+        try {
             $this->jobHunterService->save($params);
             $result = [
                 'code' => 0,
                 'msg' => '更新求职者信息成功2',
                 'data' => []
             ];
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             Log::debug($e->getMessage());
             $result = [
                 'code' => -1,
@@ -75,4 +104,106 @@ class UserController extends Controller
         ];
         return $this->response($result);
     }
+
+    // 修改客服资料
+    public function saveUser(Request $request)
+    {
+        $userId = intval($request->get('userId', 0));
+        $avatar = $request->get('newAvatar', '');
+        $pwd = $request->get('newPwd', '');
+        $oldPwd = $request->get('oldPwd', '');
+        if (empty($userId)) {
+            $result = [
+                'code' => -1,
+                'msg' => '参数不正确',
+                'data' => []
+            ];
+            return $this->response($result);
+        }
+
+        try {
+            $avatarUrl = $this->saveAvatar($avatar);
+            $this->updateUser($userId, $avatarUrl, $pwd, $oldPwd);
+            $result = [
+                'code' => 0,
+                'msg' => '密码修改成功',
+                'data' => []
+            ];
+        } catch (\Exception $exception) {
+            $result = [
+                'code' => -1,
+                'msg' => $exception->getMessage(),
+                'data' => []
+            ];
+        }
+
+
+        return $this->response($result);
+    }
+
+    private function saveAvatar($avatar)
+    {
+
+        if (empty($avatar)) {
+            return '';
+        }
+        $avatarUrl = Utils::base64_image_content($avatar, Utils::IMAGE_PATH);
+
+        return $avatarUrl;
+    }
+
+    private function updateUser($userId, $avatarUrl, $password, $oldPwd)
+    {
+        $user = User::find($userId);
+
+        if (empty($user)) {
+            throw new \Exception('用户不存在', -1);
+        }
+
+        if ($password && !Hash::check($oldPwd, $user->password)) {
+            throw new \Exception('旧密码填写错误', -1);
+        }
+//        if ($user->password != Hash::make($oldPwd)) {
+//            throw new \Exception('旧密码填写错误', -1);
+//        }
+
+        $avatarUrl && $user->avatar = $avatarUrl;
+        $password && $user->password = Hash::make($password);
+        $user->save();
+    }
+
+    public function updateOnlineStatus(Request $request)
+    {
+        $userId = intval($request->get('userId', 0));
+        $isOnLine = intval($request->get('isOnLine', 0));
+
+        if (empty($userId)) {
+            $result = [
+                'code' => -1,
+                'msg' => '参数不正确',
+                'data' => []
+            ];
+            return $this->response($result);
+        }
+
+        try {
+            $user = User::find($userId);
+            $user->is_online = $isOnLine;
+            $user->save();
+            $result = [
+                'code' => 0,
+                'msg' => '更新成功',
+                'data' => []
+            ];
+        } catch (\Exception $exception) {
+            $result = [
+                'code' => -1,
+                'msg' => $exception->getMessage(),
+                'data' => []
+            ];
+        }
+
+        return $this->response($result);
+    }
+
 }

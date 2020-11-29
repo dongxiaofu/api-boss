@@ -97,8 +97,16 @@ Route::group([
 Route::group([
     'prefix' => 'user'
 ], function ($router) {
-    // 用户信息
     Route::get('', 'UserController@getById');
+    // 获取客服信息
+    Route::get('service', 'UserController@getServiceById');
+
+    // 客服列表
+    Route::get('list', 'UserController@getUsers');
+    Route::post('reset-pwd', 'UserController@saveUser');
+    // 上报在线状态
+    Route::put('report-online-status', 'UserController@updateOnlineStatus');
+
     // 保存用户信息
     Route::post('', 'UserController@save');
     // 保存求职者个人优势
@@ -112,4 +120,57 @@ Route::group([
 //    Route::post('/experience', 'ExperienceController@create');
     // 删除工作经验
     Route::delete('/experience', 'ExperienceController@delete');
+});
+
+
+// 客服
+Route::group([
+    'prefix' => 'service'
+], function ($router) {
+    Route::get('', 'UserController@getById');
+    // 获取客服信息
+    Route::get('', 'UserController@getServiceById')->withoutMiddleware('jwt');
+
+    // 客服列表
+    Route::get('list', 'UserController@getUsers')->withoutMiddleware('jwt');
+    Route::post('reset-pwd', 'UserController@saveUser');
+    // 保存用户信息
+    Route::post('', 'UserController@save');
+    // 保存求职者个人优势
+    Route::put('advantage', 'UserController@saveAdvantage');
+
+    // 获取工作经验列表
+    Route::get('/experience-list', 'ExperienceController@list');
+    // 提交工作经验
+    Route::post('/experience', 'ExperienceController@save');
+    // 新增工作经验
+//    Route::post('/experience', 'ExperienceController@create');
+    // 删除工作经验
+    Route::delete('/experience', 'ExperienceController@delete');
+});
+
+
+// 会话
+Route::group([
+    'prefix' => 'session'
+], function ($router) {
+    Route::get('', 'UserController@getById');
+    // 客服列表
+    Route::get('list', 'SessionController@getList')->withoutMiddleware('jwt');
+    Route::get('ip', 'SessionController@getIp')->withoutMiddleware('jwt');
+    // 清理
+    Route::post('clear', 'SessionController@clear');
+    // 屏蔽
+    Route::put('block', 'SessionController@blockSwitch');
+    // 备注
+    Route::put('remark', 'SessionController@remark');
+    // 上报在线状态
+    Route::put('report-online-status', 'SessionController@updateOnlineStatus');
+});
+
+Route::group([
+    'prefix' => 'message'
+], function ($router) {
+    // 消息列表
+    Route::get('list', 'MessageController@getList')->withoutMiddleware('jwt');
 });

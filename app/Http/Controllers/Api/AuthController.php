@@ -23,9 +23,9 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $email = $request->get('email');
+        $email = $request->get('name');
         $password = $request->get('password');
-        $user = User::where('email', $email)
+        $user = User::where('name', $email)
             ->first();
 
         $result = [
@@ -41,6 +41,12 @@ class AuthController extends Controller
             return $this->response($result, 401);
         }
         $token = auth('api')->login($user);
+        // 把token保存到用户数据中
+        if($user && $token){
+            $user->token = $token;
+            $user->save();
+        }
+
 
         return $this->respondWithToken($token, $user);
     }
