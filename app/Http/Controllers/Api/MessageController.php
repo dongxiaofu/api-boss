@@ -42,7 +42,7 @@ class MessageController extends Controller
 //            * @property      int                 $second
             $carbon = $message->created_at;
             $message->post_time = sprintf('%d-%d-%d %d:%d:%d',
-                $carbon->year, $carbon->month, $carbon->day,$carbon->hour, $carbon->minute, $carbon->second);;
+                $carbon->year, $carbon->month, $carbon->day,$carbon->hour, $carbon->minute, $carbon->second);
             $messagesGroupByDate[$date][] = $message;
         }
         // 花时间多

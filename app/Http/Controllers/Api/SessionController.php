@@ -24,14 +24,19 @@ class SessionController extends Controller
     // 用户信息
     public function getList(Request $request)
     {
-        $user = Session::limit(50)
+        $users = Session::limit(50)
             ->orderBy('id', 'desc')
             ->where('status', 1)
             ->get();
+        foreach ($users as &$user) {
+            $user->updated_at = $carbon = $user->updated_at;
+            $user->last_online_time = sprintf('%d-%d-%d %d:%d:%d',
+                $carbon->year, $carbon->month, $carbon->day, $carbon->hour, $carbon->minute, $carbon->second);
+        }
         $result = [
             'code' => 0,
             'msg' => '获取会话列表成功',
-            'data' => $user
+            'data' => $users
         ];
         return $this->response($result);
     }
@@ -217,5 +222,38 @@ class SessionController extends Controller
         $sql = 'update customer set is_block = :is_block where id = :id';
         $binds = [':is_block' => $actionCode, ':id' => $customerId];
         $count = DB::update($sql, $binds);
+    }
+
+    // 备注
+    public function remark(Request $request)
+    {
+        $sessionId = $request->get('session_id', 0);
+        $remark = $request->get('remark', '');
+        $title = $request->get('title', '');
+
+        $result = [
+            'code' => 0,
+            'msg' => '备注成功',
+            'data' => []
+        ];
+
+        try {
+            if (empty($sessionId)) {
+                throw new \Exception('sessionId 不能为空', -1);
+            }
+            $session = Session::find($sessionId);
+            $remark && $session->remark = $remark;
+            $title && $session->title = $title;
+            $session->save();
+        } catch (\Exception $exception) {
+            $result = [
+                'code' => 0,
+                'msg' => $exception->getMessage(),
+                'data' => []
+            ];
+        }
+
+        return $result;
+
     }
 }

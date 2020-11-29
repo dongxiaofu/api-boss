@@ -34,6 +34,20 @@ class UserController extends Controller
         return $this->response($result);
     }
 
+    // 客服信息
+    public function getServiceById(Request $request)
+    {
+        $userId = $request->get('user_id', 0);
+        $userId = (int)$userId;
+        $user = User::find($userId);
+        $result = [
+            'code' => 0,
+            'msg' => '获取客服信息成功',
+            'data' => $user,
+        ];
+        return $this->response($result);
+    }
+
     // 用户信息
     public function getById(Request $request)
     {

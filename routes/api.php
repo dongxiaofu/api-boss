@@ -98,6 +98,36 @@ Route::group([
     'prefix' => 'user'
 ], function ($router) {
     Route::get('', 'UserController@getById');
+    // 获取客服信息
+    Route::get('service', 'UserController@getServiceById');
+
+    // 客服列表
+    Route::get('list', 'UserController@getUsers');
+    Route::post('reset-pwd', 'UserController@saveUser');
+    // 保存用户信息
+    Route::post('', 'UserController@save');
+    // 保存求职者个人优势
+    Route::put('advantage', 'UserController@saveAdvantage');
+
+    // 获取工作经验列表
+    Route::get('/experience-list', 'ExperienceController@list');
+    // 提交工作经验
+    Route::post('/experience', 'ExperienceController@save');
+    // 新增工作经验
+//    Route::post('/experience', 'ExperienceController@create');
+    // 删除工作经验
+    Route::delete('/experience', 'ExperienceController@delete');
+});
+
+
+// 客服
+Route::group([
+    'prefix' => 'service'
+], function ($router) {
+    Route::get('', 'UserController@getById');
+    // 获取客服信息
+    Route::get('', 'UserController@getServiceById');
+
     // 客服列表
     Route::get('list', 'UserController@getUsers');
     Route::post('reset-pwd', 'UserController@saveUser');
@@ -129,6 +159,8 @@ Route::group([
     Route::put('clear', 'SessionController@clear');
     // 屏蔽
     Route::put('block', 'SessionController@blockSwitch');
+    // 备注
+    Route::put('remark', 'SessionController@remark');
 });
 
 Route::group([
