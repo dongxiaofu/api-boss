@@ -23,9 +23,14 @@ class MessageController extends Controller
     // 用户信息
     public function getList(Request $request)
     {
+        $sessionId = $request->get('session_id', 0);
+        $sessionId = (int)$sessionId;
         $today = date('Ymd');
         $sevenDaysAgo = date('Ymd', strtotime('-7 days'));
         $messages = Message::select('*')
+            ->where('session_id', $sessionId)
+            ->where('status',1)
+            // 只显示今天到前七天的数据
             ->where('date_text', '<=', $today)
             ->where('date_text', '>=', $sevenDaysAgo)
             ->get();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Model\Message;
 use App\Service\JobHunterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,15 @@ class SessionController extends Controller
             ->where('status', 1)
             ->get();
         foreach ($users as &$user) {
+            $message = Message::select('message')
+                ->where('session_id', $user->id)
+                ->where('status', 1)
+                ->orderBy('id', 'desc')
+                ->first();
+            $newMessageStr = isset($message['message']) ? $message['message'] : '';
+            $newMessage = explode('|', $newMessageStr);
+            $messageType = isset($newMessage[1]) ? $newMessage[1] : 2;
+            $user->new_message = $messageType == 3 ? '图片' : $newMessage[0];
             $user->updated_at = $carbon = $user->updated_at;
             $user->last_online_time = sprintf('%d-%d-%d %d:%d:%d',
                 $carbon->year, $carbon->month, $carbon->day, $carbon->hour, $carbon->minute, $carbon->second);

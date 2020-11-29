@@ -129,10 +129,10 @@ Route::group([
 ], function ($router) {
     Route::get('', 'UserController@getById');
     // 获取客服信息
-    Route::get('', 'UserController@getServiceById');
+    Route::get('', 'UserController@getServiceById')->withoutMiddleware('jwt');
 
     // 客服列表
-    Route::get('list', 'UserController@getUsers');
+    Route::get('list', 'UserController@getUsers')->withoutMiddleware('jwt');
     Route::post('reset-pwd', 'UserController@saveUser');
     // 保存用户信息
     Route::post('', 'UserController@save');
@@ -156,10 +156,10 @@ Route::group([
 ], function ($router) {
     Route::get('', 'UserController@getById');
     // 客服列表
-    Route::get('list', 'SessionController@getList');
-    Route::get('ip', 'SessionController@getIp');
+    Route::get('list', 'SessionController@getList')->withoutMiddleware('jwt');
+    Route::get('ip', 'SessionController@getIp')->withoutMiddleware('jwt');
     // 清理
-    Route::put('clear', 'SessionController@clear');
+    Route::post('clear', 'SessionController@clear');
     // 屏蔽
     Route::put('block', 'SessionController@blockSwitch');
     // 备注
@@ -172,5 +172,5 @@ Route::group([
     'prefix' => 'message'
 ], function ($router) {
     // 消息列表
-    Route::get('list', 'MessageController@getList');
+    Route::get('list', 'MessageController@getList')->withoutMiddleware('jwt');
 });
