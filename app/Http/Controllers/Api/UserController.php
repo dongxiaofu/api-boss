@@ -144,7 +144,7 @@ class UserController extends Controller
     private function saveAvatar($avatar)
     {
 
-        if(empty($avatar)){
+        if (empty($avatar)) {
             return '';
         }
         $avatarUrl = Utils::base64_image_content($avatar, Utils::IMAGE_PATH);
@@ -170,6 +170,40 @@ class UserController extends Controller
         $avatarUrl && $user->avatar = $avatarUrl;
         $password && $user->password = Hash::make($password);
         $user->save();
+    }
+
+    public function updateOnlineStatus(Request $request)
+    {
+        $userId = intval($request->get('userId', 0));
+        $isOnLine = intval($request->get('isOnLine', 0));
+
+        if (empty($userId)) {
+            $result = [
+                'code' => -1,
+                'msg' => '参数不正确',
+                'data' => []
+            ];
+            return $this->response($result);
+        }
+
+        try {
+            $user = User::find($userId);
+            $user->is_online = $isOnLine;
+            $user->save();
+            $result = [
+                'code' => 0,
+                'msg' => '更新成功',
+                'data' => []
+            ];
+        } catch (\Exception $exception) {
+            $result = [
+                'code' => -1,
+                'msg' => $exception->getMessage(),
+                'data' => []
+            ];
+        }
+
+        return $this->response($result);
     }
 
 }

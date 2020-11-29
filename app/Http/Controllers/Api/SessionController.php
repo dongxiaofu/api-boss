@@ -254,6 +254,39 @@ class SessionController extends Controller
         }
 
         return $result;
+    }
 
+    public function updateOnlineStatus(Request $request)
+    {
+        $sessionId = intval($request->get('sessionId', 0));
+        $isOnLine = intval($request->get('isOnLine', 0));
+
+        if (empty($userId)) {
+            $result = [
+                'code' => -1,
+                'msg' => '参数不正确',
+                'data' => []
+            ];
+            return $this->response($result);
+        }
+
+        try {
+            $user = Session::find($sessionId);
+            $user->is_online = $isOnLine;
+            $user->save();
+            $result = [
+                'code' => 0,
+                'msg' => '更新成功',
+                'data' => []
+            ];
+        } catch (\Exception $exception) {
+            $result = [
+                'code' => -1,
+                'msg' => $exception->getMessage(),
+                'data' => []
+            ];
+        }
+
+        return $this->response($result);
     }
 }

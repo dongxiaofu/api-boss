@@ -11,6 +11,7 @@ use App\Service\Utils;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use itbdw\Ip\IpLocation;
 
 class WebSocket extends Command
@@ -301,6 +302,29 @@ class WebSocket extends Command
 
         //监听WebSocket连接关闭事件
         $ws->on('close', function ($ws, $fd) {
+            // 在这里，更新游客的离线状态。当ws服务部重启时，fd是唯一的。
+            $sql = 'select s.id as sid, c.id as cid from session s left join customer c  ';
+            $sql .= 'on s.customer_id = c.id ';
+            $sql .= 'where fn_id = :fn_id limit 1';
+            $binds = [':fn_id' => 213];
+            $sessions = DB::select($sql, $binds);
+            $session = $sessions[0] ?? new Class{};// 这个用法不错。
+
+            if ($session) {
+                $customerId = $session->cid ?? 0;
+                $sessionId = $session->sid ?? 0;
+
+                try {
+                    // 暂时只更新session
+                    $sessionModel = Session::find($sessionId);
+                    $sessionModel->is_online = 0;
+                    $sessionModel->save();
+                } catch (\Exception $exception) {
+                    // todo 记录到日志中
+                    var_dump($exception->getMessage());
+                }
+            }
+//        exit;
             echo "client-{$fd} is closed\n";
         });
 

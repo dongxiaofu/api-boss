@@ -104,6 +104,9 @@ Route::group([
     // 客服列表
     Route::get('list', 'UserController@getUsers');
     Route::post('reset-pwd', 'UserController@saveUser');
+    // 上报在线状态
+    Route::put('report-online-status', 'UserController@updateOnlineStatus');
+
     // 保存用户信息
     Route::post('', 'UserController@save');
     // 保存求职者个人优势
@@ -161,6 +164,8 @@ Route::group([
     Route::put('block', 'SessionController@blockSwitch');
     // 备注
     Route::put('remark', 'SessionController@remark');
+    // 上报在线状态
+    Route::put('report-online-status', 'SessionController@updateOnlineStatus');
 });
 
 Route::group([
