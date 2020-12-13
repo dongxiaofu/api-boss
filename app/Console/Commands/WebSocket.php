@@ -125,8 +125,8 @@ class WebSocket extends Command
 
                 $sessionId = 0;
                 $customerId = 0;
-            } elseif($type == 2) {
-                $sessionTitle = '游客 - 【ip:' . $ip . '】' . mt_rand(1,200);
+            } elseif ($type == 2) {
+                $sessionTitle = '游客 - 【ip:' . $ip . '】' . mt_rand(1, 200);
                 $address = $this->getAddressByIP($ip);
                 // 同一个游客，复用账号和会话
                 if ($customerId) {
@@ -375,7 +375,9 @@ class WebSocket extends Command
     {
         $unknownAddress = '未知地址';
         $qqwry_filepath = $path = base_path('vendor/itbdw/ip-database/src/qqwry.dat');
-        $addressInfo = json_encode(IpLocation::getLocation($ip, $qqwry_filepath), JSON_UNESCAPED_UNICODE);
+        $addressInfoJson = json_encode(IpLocation::getLocation($ip, $qqwry_filepath), JSON_UNESCAPED_UNICODE);
+        $addressInfo = \json_decode($addressInfoJson, true);
+        var_dump($addressInfo);
         if (!$addressInfo) {
             return $unknownAddress;
         } else {
