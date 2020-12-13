@@ -81,6 +81,7 @@ class WebSocket extends Command
             $sessionId = intval($getData['sessionId'] ?? 0);
             $this->debug && $this->info('sessionId:' . $sessionId . ',type:' . $type . ',customerId:' . $customerId);
             $ip = $getData['ip'] ?? 0;
+            $sourceSite = $getData['url'] ?? '未知';
             $requestId = $request->fd;
             $token = $getData['token'] ?? '';
             if ($token) {
@@ -155,6 +156,7 @@ class WebSocket extends Command
                     if ($session) {
                         $session->date_text = date('Ymd');
                         $session->address = $address;
+                        $session->source_site = $sourceSite;
                         $session->is_online = 1;
                         $session->save();
                     }
@@ -167,6 +169,7 @@ class WebSocket extends Command
                     $session->customer_id = $customerId;
                     $session->date_text = date('Ymd');
                     $session->address = $address;
+                    $session->source_site = $sourceSite;
                     $session->status = 1;
                     $session->is_online = 1;
                     $session->is_block = 1;
