@@ -51,18 +51,15 @@ class SessionController extends Controller
         return $this->response($result);
     }
 
-    // 用户信息
     public function getById(Request $request)
     {
-        $userId = $request->get('user_id', 0);
-        $userId = (int)$userId;
-//        var_dump($userId);exit;
-        $jobHunter = $this->jobHunterService->getByUserId($userId);
-//        var_dump($jobHunter);exit;
+        $sessionId = $request->get('session_id', 0);
+        $sessionId = (int)$sessionId;
+        $session = Session::find($sessionId);
         $result = [
             'code' => 0,
             'msg' => '获取求职者信息成功',
-            'data' => $jobHunter
+            'data' => $session
         ];
         return $this->response($result);
     }

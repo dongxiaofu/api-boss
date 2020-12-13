@@ -6,7 +6,7 @@ namespace App\Service;
 
 class Utils
 {
-    public const IMAGE_PATH = '/Users/cg/data/www/cg/html/ws/pic';
+    public const IMAGE_PATH = '/Users/cg/data/code/html/kefu/pic';
 
     public static function base64_image_content($base64_image_content, $path)
     {
@@ -17,7 +17,7 @@ class Utils
             $new_file = $path . "/" . $childPath;
             if (!file_exists($new_file)) {
                 //检查是否有该文件夹，如果没有就创建，并给予最高权限
-                mkdir($new_file, 0700);
+                mkdir($new_file, 0755);
             }
             $filename = time() . ".{$type}";
             $new_file = $new_file . $filename;

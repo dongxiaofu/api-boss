@@ -38,6 +38,8 @@ class WebSocket extends Command
 
     protected $requestCollection;
 
+    private $debug = true;
+
 
     /**
      * Create a new command instance.
@@ -68,12 +70,16 @@ class WebSocket extends Command
 
         //监听WebSocket连接打开事件
         $ws->on('open', function ($ws, $request) {
+            $this->info($request->fd . ' connected');
+//            $ws->push($request->fd, '-1|1|1|373|375');
+            $this->info('向 ' . $request->fd . ' 推送');
 
             $getData = $request->get;
             $type = intval($getData['type'] ?? 0);
             $userId = intval($getData['userId'] ?? 0);
             $customerId = intval($getData['customerId'] ?? 0);
             $sessionId = intval($getData['sessionId'] ?? 0);
+            $this->debug && $this->info('sessionId:' . $sessionId . ',type:' . $type . ',customerId:' . $customerId);
             $ip = $getData['ip'] ?? 0;
             $requestId = $request->fd;
             $token = $getData['token'] ?? '';
@@ -119,15 +125,17 @@ class WebSocket extends Command
 
                 $sessionId = 0;
                 $customerId = 0;
-            } else {
-                $sessionTitle = '游客' . strval(mt_rand(1, 200));
+            } elseif ($type == 2) {
+                $sessionTitle = '游客 - 【ip:' . $ip . '】' . mt_rand(1, 200);
                 $address = $this->getAddressByIP($ip);
                 // 同一个游客，复用账号和会话
                 if ($customerId) {
                     $customer = Customer::find($customerId);
-                    $customer->address = $address;
-                    $customer->fn_id = $requestId;
-                    $customer->save();
+                    if ($customer) {
+                        $customer->address = $address;
+                        $customer->fn_id = $requestId;
+                        $customer->save();
+                    }
                 } else {
                     // 创建游客账号
                     $customer = new Customer();
@@ -188,8 +196,11 @@ class WebSocket extends Command
             $msg = '-1|' . $requestId . '|' . $userId . '|' . $sessionId . '|' . $customerId;
             $this->info('msg start2===========');
             $this->info($msg);
+            $this->info(time() . mt_rand(1, 200));
             $this->info('msg end2===========');
             $ws->push($request->fd, $msg);
+
+
         });
 
         //监听WebSocket消息事件
@@ -274,12 +285,12 @@ class WebSocket extends Command
             $msgData = $arr[count($arr) - 2];
             $msgType = $arr[count($arr) - 1];
             if ($msgType == 1 || $msgType == 2) {
-                $msgData = $msgData . '|' . $msgType;
+                $msgData = $sessionId . '|' . $msgData . '|' . $msgType;
             } elseif ($msgType == 3) {
                 $filePath = Utils::IMAGE_PATH;
 //                $msgData = $this->base64_image_content($msgData, $filePath);
                 $msgData = Utils::base64_image_content($msgData, $filePath);
-                $msgData = 'pic/' . $msgData . '|' . $msgType;
+                $msgData = $sessionId . '|' . 'pic/' . $msgData . '|' . $msgType;
             }
 
             // 被屏蔽的会话的消息，不转发。用session作为判断依据，简洁.
@@ -309,9 +320,9 @@ class WebSocket extends Command
             $sql = 'select s.id as sid, c.id as cid from session s left join customer c  ';
             $sql .= 'on s.customer_id = c.id ';
             $sql .= 'where fn_id = :fn_id limit 1';
-            $binds = [':fn_id' => 213];
+            $binds = [':fn_id' => $fd];
             $sessions = DB::select($sql, $binds);
-            $session = $sessions[0] ?? new Class{};// 这个用法不错。
+            $session = $sessions[0] ?? new \stdClass();
 
             if ($session) {
                 $customerId = $session->cid ?? 0;
@@ -320,6 +331,9 @@ class WebSocket extends Command
                 try {
                     // 暂时只更新session
                     $sessionModel = Session::find($sessionId);
+                    $this->debug && $this->info('$sessionModel start===========');
+                    $this->debug && var_dump($sessionModel);
+                    $this->debug && $this->info('$sessionModel end===========');
                     $sessionModel->is_online = 0;
                     $sessionModel->save();
                 } catch (\Exception $exception) {
@@ -361,7 +375,9 @@ class WebSocket extends Command
     {
         $unknownAddress = '未知地址';
         $qqwry_filepath = $path = base_path('vendor/itbdw/ip-database/src/qqwry.dat');
-        $addressInfo = json_encode(IpLocation::getLocation($ip, $qqwry_filepath), JSON_UNESCAPED_UNICODE);
+        $addressInfoJson = json_encode(IpLocation::getLocation($ip, $qqwry_filepath), JSON_UNESCAPED_UNICODE);
+        $addressInfo = \json_decode($addressInfoJson, true);
+        var_dump($addressInfo);
         if (!$addressInfo) {
             return $unknownAddress;
         } else {
