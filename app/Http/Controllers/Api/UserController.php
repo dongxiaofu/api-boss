@@ -147,7 +147,7 @@ class UserController extends Controller
         if (empty($avatar)) {
             return '';
         }
-        $avatarUrl = Utils::base64_image_content($avatar, Utils::IMAGE_PATH);
+        $avatarUrl = Utils::base64_image_content($avatar, env('IMAGE_PATH'));
 
         return $avatarUrl;
     }

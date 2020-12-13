@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+//declare(strict_types=1);
 
 namespace App\Console\Commands;
 
@@ -287,7 +287,7 @@ class WebSocket extends Command
             if ($msgType == 1 || $msgType == 2) {
                 $msgData = $sessionId . '|' . $msgData . '|' . $msgType;
             } elseif ($msgType == 3) {
-                $filePath = Utils::IMAGE_PATH;
+                $filePath = env('IMAGE_PATH');
 //                $msgData = $this->base64_image_content($msgData, $filePath);
                 $msgData = Utils::base64_image_content($msgData, $filePath);
                 $msgData = $sessionId . '|' . 'pic/' . $msgData . '|' . $msgType;
