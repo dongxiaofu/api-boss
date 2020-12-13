@@ -102,7 +102,7 @@ Route::group([
     Route::get('service', 'UserController@getServiceById');
 
     // 客服列表
-    Route::get('list', 'UserController@getUsers');
+    Route::get('list', 'UserController@getUsers')->withoutMiddleware('jwt');
     Route::post('reset-pwd', 'UserController@saveUser');
     // 上报在线状态
     Route::put('report-online-status', 'UserController@updateOnlineStatus');
@@ -154,7 +154,7 @@ Route::group([
 Route::group([
     'prefix' => 'session'
 ], function ($router) {
-    Route::get('', 'UserController@getById');
+    Route::get('', 'SessionController@getById');
     // 客服列表
     Route::get('list', 'SessionController@getList')->withoutMiddleware('jwt');
     Route::get('ip', 'SessionController@getIp')->withoutMiddleware('jwt');
