@@ -381,6 +381,8 @@ class WebSocket extends Command
         $qqwry_filepath = $path = base_path('vendor/itbdw/ip-database/src/qqwry.dat');
         $addressInfoJson = json_encode(IpLocation::getLocation($ip, $qqwry_filepath), JSON_UNESCAPED_UNICODE);
         $addressInfo = \json_decode($addressInfoJson, true);
+        // 调试
+        $addressInfo = false;
         if (!$addressInfo) {
             return $unknownAddress;
         } else {
