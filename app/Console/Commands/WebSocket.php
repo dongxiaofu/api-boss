@@ -158,6 +158,7 @@ class WebSocket extends Command
                         $session->address = $address;
                         $session->source_site = $sourceSite;
                         $session->is_online = 1;
+                        $session->status = 1;
                         $session->save();
                     }
                     $this->info('session end====================');
@@ -380,7 +381,6 @@ class WebSocket extends Command
         $qqwry_filepath = $path = base_path('vendor/itbdw/ip-database/src/qqwry.dat');
         $addressInfoJson = json_encode(IpLocation::getLocation($ip, $qqwry_filepath), JSON_UNESCAPED_UNICODE);
         $addressInfo = \json_decode($addressInfoJson, true);
-        var_dump($addressInfo);
         if (!$addressInfo) {
             return $unknownAddress;
         } else {

@@ -146,6 +146,7 @@ class SessionController extends Controller
         } else {
             if ($actionType == $actionTypeSession) {
                 $this->clearSession($timeType);
+                $this->clearAllMessage($sessionId);
             } else {
                 $this->clearMessage($sessionId, $timeType);
             }
@@ -161,28 +162,56 @@ class SessionController extends Controller
 
     private function clearSession($timeType)
     {
-        $date = $this->getDate($timeType);
-        // status:是否显示：0.隐藏；1.显示
-        $sql = 'update `session` set status = :status ';
-        $sql .= 'where status = 1 ';
-        $sql .= 'and date_text <= :date_text';
-        $binds = [':status' => 0, 'date_text' => $date];
+        // 清理所有会话信息
+        if ($timeType == -1) {
+            $sql = 'update `session` set status = :status ';
+            $sql .= 'where status = 1 ';
+            $binds = [':status' => 0];
+        } else {
+            $date = $this->getDate($timeType);
+            // status:是否显示：0.隐藏；1.显示
+            $sql = 'update `session` set status = :status ';
+            $sql .= 'where status = 1 ';
+            $sql .= 'and date_text <= :date_text';
+            $binds = [':status' => 0, 'date_text' => $date];
+        }
 
         $count = DB::update($sql, $binds);
-//        var_dump($sql, $binds, $count);exit;
         return $count;
     }
 
     // todo 游客那边也看不到被清理过的对话。
     private function clearMessage($sessionId, $timeType)
     {
-        $date = $this->getDate($timeType);
-        $sql = 'update message set status = :status ';
-        $sql .= 'where status = 1 ';
-        $sql .= 'and session_id = :session_id ';
-        $sql .= 'and date_text <= :date_text';
-        $binds = [':status' => 0, 'date_text' => $date, ':session_id' => $sessionId];
-        $count = DB::update($sql, $binds);
+        // 清理所有会话信息
+        // 从软删除改为硬删除，目的是简化。
+        if ($timeType == -1) {
+//            $sql = 'update message set status = :status ';
+//            $sql .= 'where status = 1 ';
+//            $sql .= 'and session_id = :session_id ';
+//            $binds = [':status' => 0, ':session_id' => $sessionId];
+
+            $sql = 'delete from message ';
+            $sql .= 'where status = 1 ';
+            $sql .= 'and session_id = :session_id ';
+            $binds = [':session_id' => $sessionId];
+
+        } else {
+            $date = $this->getDate($timeType);
+//            $sql = 'update message set status = :status ';
+//            $sql .= 'where status = 1 ';
+//            $sql .= 'and session_id = :session_id ';
+//            $sql .= 'and date_text <= :date_text';
+//            $binds = [':status' => 0, 'date_text' => $date, ':session_id' => $sessionId];
+
+            $sql = 'delete from message ';
+            $sql .= 'where status = 1 ';
+            $sql .= 'and session_id = :session_id ';
+            $sql .= 'and date_text <= :date_text';
+            $binds = ['date_text' => $date, ':session_id' => $sessionId];
+        }
+//        $count = DB::update($sql, $binds);
+        $count = DB::delete($sql, $binds);
         return $count;
     }
 
@@ -295,5 +324,16 @@ class SessionController extends Controller
         }
 
         return $this->response($result);
+    }
+
+    private function clearAllMessage($sessionId)
+    {
+        // 清理所有会话信息
+        $sql = 'update message set status = :status ';
+        $sql .= 'where status = 1 ';
+        $sql .= 'and session_id = :session_id ';
+        $binds = [':status' => 0, ':session_id' => $sessionId];
+        $count = DB::update($sql, $binds);
+        return $count;
     }
 }

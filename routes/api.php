@@ -154,7 +154,7 @@ Route::group([
 Route::group([
     'prefix' => 'session'
 ], function ($router) {
-    Route::get('', 'SessionController@getById');
+    Route::get('', 'SessionController@getById')->withoutMiddleware('jwt');
     // 客服列表
     Route::get('list', 'SessionController@getList')->withoutMiddleware('jwt');
     Route::get('ip', 'SessionController@getIp')->withoutMiddleware('jwt');
