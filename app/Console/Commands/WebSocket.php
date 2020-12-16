@@ -148,6 +148,9 @@ class WebSocket extends Command
                     $customerId = $customer->id;
                 }
                 $session = Session::find($sessionId);
+                $this->info('session find start====================');
+                var_dump($session);
+                $this->info('session find end====================');
                 if ($session) {
                     // 更新会话
 //                    $session = Session::find($sessionId)->where('user_id', $userId)->where('customer_id', $customerId);
@@ -266,23 +269,27 @@ class WebSocket extends Command
             $toWhoId = $arr[0];
             array_shift($arr);
 
+            $session = Session::find($sessionId);
+
             $message = implode('', $arr);
             $this->info('================= start ===========');
             // type:1，客服发送；2，游客发送
             if ($type == 1) {
-
                 $customer = Customer::find($toWhoId);
                 $isBlock = $customer->is_block ?? 0;
                 // var_dump($customer);
                 $receiverId = $customer->fn_id ?? 0;
                 $this->info('toWhoId:' . $toWhoId);
                 $this->info('receiverId:' . $receiverId);
+                $isOnline = isset($session->is_online) ? $session->is_online : 0;
+
             } else {
                 $this->info('================= $toWhoId s===========');
                 $this->info($toWhoId);
                 $this->info('================= $toWhoId e===========');
                 $user = User::find($toWhoId);
                 $receiverId = $user->fn_id;
+                $isOnline = isset($user->is_online) ? $user->is_online : 0;
             }
             $this->info('================= end ===========');
             $msgData = $arr[count($arr) - 2];
@@ -298,9 +305,9 @@ class WebSocket extends Command
 
             // 被屏蔽的会话的消息，不转发。用session作为判断依据，简洁.
             // 游客发来的消息，没有包含游客ID
-            $session = Session::find($sessionId);
+            // 任何一方离线，不发消息。
             $isBlock = $session->is_block ?? 0;
-            if ($isBlock == 1 && $receiverId) {
+            if ($isBlock == 1 && $receiverId && $isOnline) {
                 $ws->push($receiverId, $msgData);
                 // 保存聊天记录
                 $messageModel = new Message();

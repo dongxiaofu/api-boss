@@ -37,8 +37,10 @@ class SessionController extends Controller
                 ->first();
             $newMessageStr = isset($message['message']) ? $message['message'] : '';
             $newMessage = explode('|', $newMessageStr);
-            $messageType = isset($newMessage[1]) ? $newMessage[1] : 2;
-            $user->new_message = $messageType == 3 ? '图片' : $newMessage[0];
+            $size = count($newMessage);
+            $messageType = isset($newMessage[$size - 1]) ? $newMessage[$size - 1] : 2;
+//            $user->new_message = $messageType == 3 ? '【图片】' : $newMessage[0];
+            $user->new_message = $newMessage[1];
             $user->updated_at = $carbon = $user->updated_at;
             $user->last_online_time = sprintf('%d-%d-%d %d:%d:%d',
                 $carbon->year, $carbon->month, $carbon->day, $carbon->hour, $carbon->minute, $carbon->second);
