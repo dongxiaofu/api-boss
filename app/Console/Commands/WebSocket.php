@@ -130,8 +130,8 @@ class WebSocket extends Command
                 $sessionTitle = '游客 - 【ip:' . $ip . '】' . mt_rand(1, 200);
                 $address = $this->getAddressByIP($ip);
                 // 同一个游客，复用账号和会话
-                if ($customerId) {
-                    $customer = Customer::find($customerId);
+                $customer = Customer::find($customerId);
+                if ($customer) {
                     if ($customer) {
                         $customer->address = $address;
                         $customer->fn_id = $requestId;
@@ -147,11 +147,10 @@ class WebSocket extends Command
                     $customer->save();
                     $customerId = $customer->id;
                 }
-
-                if ($sessionId) {
+                $session = Session::find($sessionId);
+                if ($session) {
                     // 更新会话
 //                    $session = Session::find($sessionId)->where('user_id', $userId)->where('customer_id', $customerId);
-                    $session = Session::find($sessionId);
                     $this->info('session start====================');
                     if ($session) {
                         $session->date_text = date('Ymd');

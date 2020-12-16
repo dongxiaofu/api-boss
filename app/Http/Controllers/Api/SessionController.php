@@ -139,7 +139,7 @@ class SessionController extends Controller
         $sessionId = $request->get('session_id', 0);
         if ($actionType == 0 || $timeType == 0) {
             $result = [
-                'code' => 0,
+                'code' => -1,
                 'msg' => '参数不正确',
                 'data' => []
             ];
